@@ -1,0 +1,226 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  username      String    @unique
+  email         String    @unique
+  passwordHash  String?
+  displayName   String?
+  avatar        String?
+  bio           String?
+  role          Role      @default(USER)
+  verified      Boolean   @default(false)
+  premium       Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  videos        Video[]
+  comments      Comment[]
+  likes         Like[]
+  views         View[]
+  playlists     Playlist[]
+  subscriptions Subscription[] @relation("Subscriber")
+  subscribers   Subscription[] @relation("Creator")
+
+  @@index([username])
+  @@index([email])
+}
+
+enum Role {
+  USER
+  CREATOR
+  ADMIN
+}
+
+model Video {
+  id            String        @id @default(cuid())
+  title         String
+  description   String?
+  slug          String        @unique
+  status        VideoStatus   @default(PROCESSING)
+  visibility    Visibility    @default(PUBLIC)
+
+  // Storage
+  originalKey   String?       // S3 key for original file
+  hlsKey        String?       // S3 key for HLS playlist
+  thumbnailKey  String?
+  previewKey    String?       // Short preview gif/mp4
+
+  // Media info
+  duration      Int?          // seconds
+  width         Int?
+  height        Int?
+  fileSize      BigInt?
+  mimeType      String?
+
+  // Stats
+  viewCount     Int           @default(0)
+  likeCount     Int           @default(0)
+  commentCount  Int           @default(0)
+  downloadCount Int           @default(0)
+
+  // Relations
+  authorId      String
+  author        User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  categoryId    String?
+  category      Category?     @relation(fields: [categoryId], references: [id])
+  tags          VideoTag[]
+  comments      Comment[]
+  likes         Like[]
+  views         View[]
+  playlists     PlaylistVideo[]
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  publishedAt   DateTime?
+
+  @@index([authorId])
+  @@index([status])
+  @@index([visibility])
+  @@index([categoryId])
+  @@index([createdAt])
+  @@index([viewCount])
+  @@index([likeCount])
+}
+
+enum VideoStatus {
+  PENDING
+  PROCESSING
+  READY
+  FAILED
+}
+
+enum Visibility {
+  PUBLIC
+  UNLISTED
+  PRIVATE
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  slug        String    @unique
+  description String?
+  thumbnail   String?
+  videoCount  Int       @default(0)
+  videos      Video[]
+  createdAt   DateTime  @default(now())
+
+  @@index([slug])
+}
+
+model Tag {
+  id        String     @id @default(cuid())
+  name      String     @unique
+  slug      String     @unique
+  videos    VideoTag[]
+
+  @@index([slug])
+}
+
+model VideoTag {
+  videoId   String
+  tagId     String
+  video     Video  @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  tag       Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([videoId, tagId])
+}
+
+model Comment {
+  id        String    @id @default(cuid())
+  body      String
+  videoId   String
+  authorId  String
+  parentId  String?
+  likeCount Int       @default(0)
+
+  video     Video     @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parent    Comment?  @relation("Replies", fields: [parentId], references: [id])
+  replies   Comment[] @relation("Replies")
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([videoId])
+  @@index([authorId])
+}
+
+model Like {
+  userId    String
+  videoId   String
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  video     Video  @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([userId, videoId])
+}
+
+model View {
+  id        String   @id @default(cuid())
+  videoId   String
+  userId    String?
+  ipHash    String?
+  userAgent String?
+  video     Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
+
+  @@index([videoId])
+  @@index([createdAt])
+}
+
+model Playlist {
+  id          String          @id @default(cuid())
+  name        String
+  description String?
+  visibility  Visibility      @default(PUBLIC)
+  authorId    String
+  author      User            @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  videos      PlaylistVideo[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([authorId])
+}
+
+model PlaylistVideo {
+  playlistId  String
+  videoId     String
+  position    Int
+  playlist    Playlist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+  video       Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  addedAt     DateTime @default(now())
+
+  @@id([playlistId, videoId])
+  @@index([playlistId, position])
+}
+
+model Subscription {
+  subscriberId String
+  creatorId    String
+  subscriber   User     @relation("Subscriber", fields: [subscriberId], references: [id], onDelete: Cascade)
+  creator      User     @relation("Creator", fields: [creatorId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+
+  @@id([subscriberId, creatorId])
+}
+
+model TranscodeJob {
+  id        String   @id @default(cuid())
+  videoId   String   @unique
+  status    String   @default("queued")
+  progress  Int      @default(0)
+  error     String?
+  startedAt DateTime?
+  doneAt    DateTime?
+  createdAt DateTime @default(now())
+}

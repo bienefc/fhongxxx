@@ -1,0 +1,99 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    @apply bg-surface-900 text-gray-100 antialiased;
+    font-family: Inter, system-ui, sans-serif;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-surface-800;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-surface-400 rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-surface-300;
+  }
+
+  a {
+    @apply text-inherit no-underline;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 focus:ring-offset-surface-900 disabled:opacity-50 disabled:pointer-events-none;
+  }
+  .btn-primary {
+    @apply btn bg-brand-500 text-white hover:bg-brand-600 active:bg-brand-700;
+  }
+  .btn-secondary {
+    @apply btn bg-surface-600 text-gray-100 hover:bg-surface-500 active:bg-surface-400;
+  }
+  .btn-ghost {
+    @apply btn text-gray-300 hover:bg-surface-700 hover:text-white;
+  }
+  .btn-danger {
+    @apply btn bg-red-600 text-white hover:bg-red-700;
+  }
+
+  .input {
+    @apply w-full rounded-md bg-surface-700 border border-surface-500 px-3 py-2 text-sm text-gray-100 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-colors;
+  }
+
+  .badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+  .badge-orange {
+    @apply badge bg-brand-500/20 text-brand-400;
+  }
+  .badge-gray {
+    @apply badge bg-surface-600 text-gray-300;
+  }
+
+  .card {
+    @apply bg-surface-800 rounded-lg border border-surface-700;
+  }
+}
+
+/* Video player custom styles */
+.video-container {
+  @apply relative w-full bg-black;
+  aspect-ratio: 16 / 9;
+}
+
+.video-container video {
+  @apply w-full h-full;
+}
+
+/* Skeleton loading */
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+.skeleton {
+  @apply bg-surface-700 rounded animate-pulse;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+/* Age gate overlay */
+.age-gate-blur {
+  filter: blur(20px);
+  pointer-events: none;
+  user-select: none;
+}

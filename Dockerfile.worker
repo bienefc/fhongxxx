@@ -1,0 +1,18 @@
+FROM node:20-alpine
+
+# Install FFmpeg
+RUN apk add --no-cache ffmpeg
+
+WORKDIR /app/worker
+
+COPY worker/package.json ./
+RUN npm install
+
+COPY worker/transcoder.js ./
+COPY prisma ./prisma
+
+# Generate Prisma client for worker
+RUN npx prisma generate --schema=./prisma/schema.prisma 2>/dev/null || true
+
+ENV NODE_ENV=production
+CMD ["node", "transcoder.js"]
