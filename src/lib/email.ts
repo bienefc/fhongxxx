@@ -91,7 +91,7 @@ export async function sendVerificationEmail(email: string, token: string) {
     </table>
 
     <p style="margin:0 0 20px;font-size:13px;color:#9ca3af;background:#fafafa;border:1px solid #f0f0f0;border-radius:6px;padding:12px 16px;">
-      &#x26A0;&#xFE0F; &nbsp;This link expires in <strong style="color:#374151;">24 hours</strong>. If you didn't sign up, safely ignore this email.
+      &#x26A0;&#xFE0F; &nbsp;This link expires in <strong style="color:#374151;">15 minutes</strong>. If you didn't sign up, safely ignore this email.
     </p>
 
     <p style="margin:0;font-size:12px;color:#9ca3af;">
@@ -125,7 +125,7 @@ export async function sendPasswordResetEmail(email: string, token: string) {
 
     <h1 style="margin:0 0 14px;font-size:26px;font-weight:800;color:#111827;letter-spacing:-0.5px;">Reset Your Password</h1>
     <p style="margin:0 0 32px;font-size:15px;color:#6b7280;line-height:1.8;max-width:380px;margin-left:auto;margin-right:auto;">
-      We received a request to reset your password. Click the button below to choose a new one. This link expires in <strong style="color:#374151;">1 hour</strong>.
+      We received a request to reset your password. Click the button below to choose a new one. This link expires in <strong style="color:#374151;">30 minutes</strong>.
     </p>
 
     <table cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:28px;">
