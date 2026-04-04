@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import {
   Play, Pause, Volume2, VolumeX, Maximize, Minimize,
-  Settings, ChevronRight, SkipForward, SkipBack,
+  Settings, ChevronRight, SkipForward, SkipBack, PictureInPicture2,
 } from "lucide-react";
 import { formatDuration, cn } from "@/lib/utils";
 
@@ -30,6 +30,7 @@ export default function VideoPlayer({ hlsUrl, thumbnailUrl, videoId, title, auto
   const [duration, setDuration] = useState(0);
   const [buffered, setBuffered] = useState(0);
   const [fullscreen, setFullscreen] = useState(false);
+  const [pip, setPip] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [loading, setLoading] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
@@ -112,6 +113,30 @@ export default function VideoPlayer({ hlsUrl, thumbnailUrl, videoId, title, auto
     document.addEventListener("fullscreenchange", handler);
     return () => document.removeEventListener("fullscreenchange", handler);
   }, []);
+
+  // PiP listener
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    const onEnter = () => setPip(true);
+    const onLeave = () => setPip(false);
+    v.addEventListener("enterpictureinpicture", onEnter);
+    v.addEventListener("leavepictureinpicture", onLeave);
+    return () => {
+      v.removeEventListener("enterpictureinpicture", onEnter);
+      v.removeEventListener("leavepictureinpicture", onLeave);
+    };
+  }, []);
+
+  async function togglePip() {
+    const v = videoRef.current;
+    if (!v) return;
+    if (document.pictureInPictureElement) {
+      await document.exitPictureInPicture();
+    } else if (document.pictureInPictureEnabled) {
+      await v.requestPictureInPicture();
+    }
+  }
 
   // Auto-hide controls
   const resetHideTimer = useCallback(() => {
@@ -301,6 +326,11 @@ export default function VideoPlayer({ hlsUrl, thumbnailUrl, videoId, title, auto
                 </div>
               )}
             </div>
+
+            {/* PiP */}
+            <button onClick={togglePip} className={cn("transition-colors p-1", pip ? "text-brand-400" : "text-white/70 hover:text-white")}>
+              <PictureInPicture2 size={18} />
+            </button>
 
             {/* Fullscreen */}
             <button onClick={toggleFullscreen} className="text-white/70 hover:text-white transition-colors p-1">
