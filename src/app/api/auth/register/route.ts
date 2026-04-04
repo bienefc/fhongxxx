@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import prisma from "@/lib/prisma";
+import { sendVerificationEmail } from "@/lib/email";
 
 const schema = z.object({
   username: z
@@ -35,18 +36,32 @@ export async function POST(req: NextRequest) {
     }
 
     const passwordHash = await bcrypt.hash(password, 12);
-    const user = await prisma.user.create({
+    await prisma.user.create({
       data: {
         email: email.toLowerCase(),
         username: username.toLowerCase(),
         displayName: username,
         passwordHash,
         role: "USER",
+        verified: false,
       },
-      select: { id: true, username: true, email: true },
     });
 
-    return NextResponse.json({ user }, { status: 201 });
+    // Create email verification token (expires in 24h)
+    const tokenRecord = await prisma.emailToken.create({
+      data: {
+        type: "EMAIL_VERIFICATION",
+        email: email.toLowerCase(),
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      },
+    });
+
+    await sendVerificationEmail(email.toLowerCase(), tokenRecord.token);
+
+    return NextResponse.json(
+      { message: "Account created. Please check your email to verify your account." },
+      { status: 201 }
+    );
   } catch (err: any) {
     if (err.name === "ZodError") {
       return NextResponse.json({ error: err.errors[0].message }, { status: 400 });

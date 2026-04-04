@@ -214,6 +214,23 @@ model Subscription {
   @@id([subscriberId, creatorId])
 }
 
+model EmailToken {
+  id        String   @id @default(cuid())
+  token     String   @unique @default(cuid())
+  type      EmailTokenType
+  email     String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([token])
+  @@index([email])
+}
+
+enum EmailTokenType {
+  EMAIL_VERIFICATION
+  PASSWORD_RESET
+}
+
 model TranscodeJob {
   id        String   @id @default(cuid())
   videoId   String   @unique

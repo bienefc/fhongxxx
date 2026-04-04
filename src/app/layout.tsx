@@ -11,6 +11,7 @@ export const metadata: Metadata = {
   title: { default: APP_NAME, template: `%s | ${APP_NAME}` },
   description: "Free adult videos — watch, upload, share.",
   robots: { index: true, follow: true },
+  icons: { icon: "/favicon.svg" },
   other: {
     rating: "adult",
   },
