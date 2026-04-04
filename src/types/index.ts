@@ -32,6 +32,7 @@ export interface VideoListItem {
 export interface VideoDetail extends VideoListItem {
   description: string | null;
   hlsUrl: string | null;
+  embedUrl: string | null;
   width: number | null;
   height: number | null;
   fileSize: number | null;

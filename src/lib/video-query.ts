@@ -7,6 +7,7 @@ const videoSelect = {
   title: true,
   slug: true,
   thumbnailKey: true,
+  thumbnailUrl: true,
   previewKey: true,
   duration: true,
   viewCount: true,
@@ -29,7 +30,7 @@ const videoSelect = {
 function mapVideo(v: any): VideoListItem {
   return {
     ...v,
-    thumbnailUrl: v.thumbnailKey ? getPublicUrl(v.thumbnailKey) : null,
+    thumbnailUrl: v.thumbnailUrl ?? (v.thumbnailKey ? getPublicUrl(v.thumbnailKey) : null),
     previewUrl: v.previewKey ? getPublicUrl(v.previewKey) : null,
     tags: v.tags.map((t: any) => t.tag),
     createdAt: v.createdAt.toISOString(),
@@ -106,6 +107,7 @@ export async function getVideoBySlug(slug: string, userId?: string): Promise<Vid
       ...videoSelect,
       description: true,
       hlsKey: true,
+      embedUrl: true,
       width: true,
       height: true,
       fileSize: true,
@@ -125,6 +127,7 @@ export async function getVideoBySlug(slug: string, userId?: string): Promise<Vid
     ...mapVideo(v),
     description: v.description,
     hlsUrl: v.hlsKey ? getPublicUrl(v.hlsKey) : null,
+    embedUrl: v.embedUrl ?? null,
     width: v.width,
     height: v.height,
     fileSize: v.fileSize ? Number(v.fileSize) : null,

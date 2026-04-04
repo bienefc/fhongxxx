@@ -7,14 +7,37 @@ import {
 import { formatDuration, cn } from "@/lib/utils";
 
 interface Props {
-  hlsUrl: string;
+  hlsUrl?: string | null;
+  embedUrl?: string | null;
   thumbnailUrl?: string | null;
   videoId: string;
   title?: string;
   autoPlay?: boolean;
 }
 
-export default function VideoPlayer({ hlsUrl, thumbnailUrl, videoId, title, autoPlay }: Props) {
+export default function VideoPlayer({ hlsUrl, embedUrl, thumbnailUrl, videoId, title, autoPlay }: Props) {
+  // Render embed iframe for external videos (e.g. Eporner)
+  if (embedUrl) {
+    return (
+      <div className="relative bg-black" style={{ aspectRatio: "16/9" }}>
+        <iframe
+          src={embedUrl}
+          className="w-full h-full"
+          allowFullScreen
+          allow="autoplay; fullscreen"
+          title={title}
+        />
+      </div>
+    );
+  }
+
+  if (!hlsUrl) {
+    return (
+      <div className="relative bg-black flex items-center justify-center" style={{ aspectRatio: "16/9" }}>
+        <p className="text-gray-400">Video not available</p>
+      </div>
+    );
+  }
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const progressRef = useRef<HTMLDivElement>(null);
@@ -50,6 +73,7 @@ export default function VideoPlayer({ hlsUrl, thumbnailUrl, videoId, title, auto
     let hls: any;
 
     async function setup() {
+      if (!hlsUrl) return;
       if (video!.canPlayType("application/vnd.apple.mpegurl")) {
         // Native HLS (Safari)
         video!.src = hlsUrl;

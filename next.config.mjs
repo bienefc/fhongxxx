@@ -8,6 +8,7 @@ const nextConfig = {
       { protocol: "http", hostname: "localhost", port: "9000" },
       { protocol: "http", hostname: "localhost" },
       { protocol: "http", hostname: "minio" },
+      { protocol: "https", hostname: "**.eporner.com" },
     ],
   },
 };

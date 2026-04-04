@@ -45,18 +45,13 @@ export default async function VideoPage({ params }: Props) {
         <div>
           {/* Player */}
           <div className="rounded-xl overflow-hidden bg-black shadow-2xl">
-            {video.hlsUrl ? (
-              <VideoPlayer
-                hlsUrl={video.hlsUrl}
-                thumbnailUrl={video.thumbnailUrl}
-                videoId={video.id}
-                title={video.title}
-              />
-            ) : (
-              <div className="aspect-video flex items-center justify-center bg-surface-800">
-                <p className="text-gray-400">Video not available</p>
-              </div>
-            )}
+            <VideoPlayer
+              hlsUrl={video.hlsUrl}
+              embedUrl={video.embedUrl}
+              thumbnailUrl={video.thumbnailUrl}
+              videoId={video.id}
+              title={video.title}
+            />
           </div>
 
           {/* Title & meta */}

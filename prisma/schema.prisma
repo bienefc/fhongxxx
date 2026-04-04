@@ -60,6 +60,12 @@ model Video {
   fileSize      BigInt?
   mimeType      String?
 
+  // External source (e.g. eporner)
+  source        String?       // "eporner" | null
+  embedUrl      String?       // iframe embed URL
+  externalId    String?       // source video ID (for dedup)
+  thumbnailUrl  String?       // direct thumbnail URL
+
   // Stats
   viewCount     Int           @default(0)
   likeCount     Int           @default(0)

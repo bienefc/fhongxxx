@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle, XCircle, Trash2, RefreshCw, Eye, ExternalLink } from "lucide-react";
+import { CheckCircle, XCircle, Trash2, RefreshCw, Eye, ExternalLink, Download } from "lucide-react";
 import { timeAgo, cn } from "@/lib/utils";
 import Link from "next/link";
 
@@ -30,6 +30,49 @@ export default function AdminPanel({ initialVideos }: { initialVideos: VideoRow[
   const [statusFilter, setStatusFilter] = useState("all");
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(initialVideos.length);
+
+  // Eporner import state
+  const [importQuery, setImportQuery] = useState("");
+  const [importCount, setImportCount] = useState(20);
+  const [importOrder, setImportOrder] = useState("most-popular");
+  const [importing, setImporting] = useState(false);
+  const [importResult, setImportResult] = useState<{ imported: number; skipped: number } | null>(null);
+  const [syncing, setSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState<{ imported: number; skipped: number } | null>(null);
+
+  async function handleSync() {
+    setSyncing(true);
+    setSyncResult(null);
+    try {
+      const res = await fetch("/api/admin/sync", { method: "POST" });
+      const data = await res.json();
+      setSyncResult(data);
+      if (data.imported > 0) await loadVideos(statusFilter, page);
+    } catch {
+      setSyncResult({ imported: 0, skipped: 0 });
+    } finally {
+      setSyncing(false);
+    }
+  }
+
+  async function handleImport() {
+    setImporting(true);
+    setImportResult(null);
+    try {
+      const res = await fetch("/api/admin/import", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: importQuery, count: importCount, order: importOrder }),
+      });
+      const data = await res.json();
+      setImportResult(data);
+      if (data.imported > 0) await loadVideos(statusFilter, page);
+    } catch (e) {
+      setImportResult({ imported: 0, skipped: 0 });
+    } finally {
+      setImporting(false);
+    }
+  }
 
   function toggleSelect(id: string) {
     setSelected((s) => {
@@ -84,6 +127,74 @@ export default function AdminPanel({ initialVideos }: { initialVideos: VideoRow[
   const statuses = ["all", "PENDING", "PROCESSING", "READY", "FAILED"];
 
   return (
+    <div className="space-y-6">
+      {/* Eporner Import */}
+      <div className="card p-4">
+        <h2 className="text-sm font-semibold text-gray-300 mb-3 flex items-center gap-2">
+          <Download size={15} /> Import from Eporner
+        </h2>
+        <div className="flex flex-wrap gap-2">
+          <input
+            type="text"
+            value={importQuery}
+            onChange={(e) => setImportQuery(e.target.value)}
+            placeholder="Search query (leave blank for trending)"
+            className="input text-sm flex-1 min-w-[200px]"
+          />
+          <select
+            value={importOrder}
+            onChange={(e) => setImportOrder(e.target.value)}
+            className="input text-sm w-40"
+          >
+            <option value="most-popular">Most Popular</option>
+            <option value="top-rated">Top Rated</option>
+            <option value="newest">Newest</option>
+            <option value="longest">Longest</option>
+          </select>
+          <input
+            type="number"
+            value={importCount}
+            onChange={(e) => setImportCount(Number(e.target.value))}
+            min={1}
+            max={100}
+            className="input text-sm w-20"
+          />
+          <button
+            onClick={handleImport}
+            disabled={importing}
+            className="btn-primary text-sm px-4 h-9"
+          >
+            {importing ? "Importing…" : "Import"}
+          </button>
+        </div>
+        {importResult && (
+          <p className="text-xs mt-2 text-gray-400">
+            Done — <span className="text-green-400">{importResult.imported} imported</span>,{" "}
+            <span className="text-yellow-400">{importResult.skipped} skipped</span> (already exist)
+          </p>
+        )}
+
+        <div className="border-t border-surface-700 mt-4 pt-4 flex items-center gap-3">
+          <div>
+            <p className="text-xs font-medium text-gray-300">Auto-sync</p>
+            <p className="text-xs text-gray-500">Fetches newest videos from Eporner (runs automatically every 6h on Vercel)</p>
+          </div>
+          <button
+            onClick={handleSync}
+            disabled={syncing}
+            className="btn-secondary text-sm px-4 h-9 ml-auto flex-shrink-0"
+          >
+            {syncing ? "Syncing…" : "Run Sync Now"}
+          </button>
+          {syncResult && (
+            <p className="text-xs text-gray-400">
+              <span className="text-green-400">{syncResult.imported} new</span>,{" "}
+              <span className="text-yellow-400">{syncResult.skipped} skipped</span>
+            </p>
+          )}
+        </div>
+      </div>
+
     <div className="card overflow-hidden">
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-3 p-4 border-b border-surface-700">
@@ -224,6 +335,7 @@ export default function AdminPanel({ initialVideos }: { initialVideos: VideoRow[
           </button>
         </div>
       </div>
+    </div>
     </div>
   );
 }
