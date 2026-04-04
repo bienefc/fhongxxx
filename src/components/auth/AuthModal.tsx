@@ -1,6 +1,8 @@
 "use client";
 import { useState } from "react";
 import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { X, Eye, EyeOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -11,6 +13,7 @@ interface Props {
 }
 
 export default function AuthModal({ open, onClose, initialMode = "login" }: Props) {
+  const router = useRouter();
   const [mode, setMode] = useState(initialMode);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -35,7 +38,11 @@ export default function AuthModal({ open, onClose, initialMode = "login" }: Prop
     });
     setLoading(false);
     if (res?.error) {
-      setError("Invalid email/username or password");
+      if (res.error === "EMAIL_NOT_VERIFIED") {
+        setError("Please verify your email before signing in. Check your inbox.");
+      } else {
+        setError("Invalid email/username or password");
+      }
     } else {
       onClose();
     }
@@ -57,13 +64,8 @@ export default function AuthModal({ open, onClose, initialMode = "login" }: Prop
         setLoading(false);
         return;
       }
-      // Auto-login after register
-      await signIn("credentials", {
-        login: form.email,
-        password: form.password,
-        redirect: false,
-      });
       onClose();
+      router.push("/verify-email");
     } catch {
       setError("Something went wrong");
     }
@@ -147,6 +149,15 @@ export default function AuthModal({ open, onClose, initialMode = "login" }: Prop
               <button type="submit" className="btn-primary w-full py-2.5" disabled={loading}>
                 {loading ? "Signing in..." : "Log In"}
               </button>
+              <div className="text-center">
+                <Link
+                  href="/forgot-password"
+                  onClick={onClose}
+                  className="text-xs text-gray-500 hover:text-brand-400 transition-colors"
+                >
+                  Forgot password?
+                </Link>
+              </div>
             </form>
           ) : (
             <form onSubmit={handleRegister} className="space-y-4">
