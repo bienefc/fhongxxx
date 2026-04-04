@@ -263,7 +263,7 @@ export default function VideoPlayer({ hlsUrl, thumbnailUrl, videoId, title, auto
                 step={0.05}
                 value={muted ? 0 : volume}
                 onChange={handleVolumeChange}
-                className="w-20 h-1 accent-brand-500 opacity-0 group-hover/vol:opacity-100 transition-opacity cursor-pointer"
+                className="h-1 accent-brand-500 cursor-pointer w-0 group-hover/vol:w-20 overflow-hidden transition-[width] duration-200 ease-in-out"
               />
             </div>
 
