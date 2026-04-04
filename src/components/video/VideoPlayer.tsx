@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import {
   Play, Pause, Volume2, VolumeX, Maximize, Minimize,
-  Settings, ChevronRight, SkipForward, SkipBack, PictureInPicture2,
+  Settings, ChevronRight, SkipForward, SkipBack, PictureInPicture2, Repeat2,
 } from "lucide-react";
 import { formatDuration, cn } from "@/lib/utils";
 
@@ -35,6 +35,7 @@ export default function VideoPlayer({ hlsUrl, thumbnailUrl, videoId, title, auto
   const [loading, setLoading] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
   const [quality, setQuality] = useState("auto");
+  const [loop, setLoop] = useState(false);
 
   // Register view
   useEffect(() => {
@@ -127,6 +128,13 @@ export default function VideoPlayer({ hlsUrl, thumbnailUrl, videoId, title, auto
       v.removeEventListener("leavepictureinpicture", onLeave);
     };
   }, []);
+
+  function toggleLoop() {
+    const v = videoRef.current;
+    if (!v) return;
+    v.loop = !v.loop;
+    setLoop(v.loop);
+  }
 
   async function togglePip() {
     const v = videoRef.current;
@@ -309,6 +317,20 @@ export default function VideoPlayer({ hlsUrl, thumbnailUrl, videoId, title, auto
               </button>
               {showSettings && (
                 <div className="absolute bottom-full right-0 mb-2 bg-surface-800 border border-surface-600 rounded-lg p-3 w-44 text-sm">
+                  {/* Loop */}
+                  <button
+                    onClick={toggleLoop}
+                    className={cn(
+                      "flex items-center justify-between w-full px-2 py-1.5 rounded hover:bg-surface-600 transition-colors mb-2",
+                      loop && "text-brand-400"
+                    )}
+                  >
+                    <span className="flex items-center gap-2"><Repeat2 size={14} />Loop</span>
+                    <span className={cn("w-7 h-4 rounded-full transition-colors relative", loop ? "bg-brand-500" : "bg-surface-500")}>
+                      <span className={cn("absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all", loop ? "left-3.5" : "left-0.5")} />
+                    </span>
+                  </button>
+                  <div className="border-t border-surface-600 mb-2" />
                   <p className="text-xs text-gray-400 mb-2 font-medium uppercase tracking-wide">Quality</p>
                   {["auto", "1080p", "720p", "480p", "360p"].map((q) => (
                     <button
