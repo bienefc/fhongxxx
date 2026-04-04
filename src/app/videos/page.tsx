@@ -22,7 +22,7 @@ export default async function VideosPage({ searchParams }: Props) {
   ];
 
   return (
-    <div className="max-w-[1600px] mx-auto px-4 py-8">
+    <div className="py-2">
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <h1 className="text-2xl font-bold">All Videos</h1>
         <div className="flex gap-2">
