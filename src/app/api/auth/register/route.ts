@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
       data: {
         type: "EMAIL_VERIFICATION",
         email: email.toLowerCase(),
-        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        expiresAt: new Date(Date.now() + 15 * 60 * 1000), // 15 minutes
       },
     });
 

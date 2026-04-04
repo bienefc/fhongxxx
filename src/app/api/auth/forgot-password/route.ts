@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
       data: {
         type: "PASSWORD_RESET",
         email: email.toLowerCase(),
-        expiresAt: new Date(Date.now() + 60 * 60 * 1000), // 1 hour
+        expiresAt: new Date(Date.now() + 30 * 60 * 1000), // 30 minutes
       },
     });
 
