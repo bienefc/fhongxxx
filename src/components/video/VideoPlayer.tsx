@@ -22,7 +22,10 @@ export default function VideoPlayer({ hlsUrl, thumbnailUrl, videoId, title, auto
 
   const [playing, setPlaying] = useState(false);
   const [muted, setMuted] = useState(false);
-  const [volume, setVolume] = useState(1);
+  const [volume, setVolume] = useState(() => {
+    if (typeof window === "undefined") return 1;
+    return Number(localStorage.getItem("playerVolume") ?? 1);
+  });
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [buffered, setBuffered] = useState(0);
@@ -80,6 +83,7 @@ export default function VideoPlayer({ hlsUrl, thumbnailUrl, videoId, title, auto
     const onPause = () => setPlaying(false);
     const onWaiting = () => setLoading(true);
     const onCanPlay = () => setLoading(false);
+    const onLoadedMetadata = () => { v.volume = volume; v.muted = volume === 0; };
 
     v.addEventListener("timeupdate", onTimeUpdate);
     v.addEventListener("durationchange", onDuration);
@@ -88,6 +92,7 @@ export default function VideoPlayer({ hlsUrl, thumbnailUrl, videoId, title, auto
     v.addEventListener("waiting", onWaiting);
     v.addEventListener("canplay", onCanPlay);
     v.addEventListener("loadeddata", onCanPlay);
+    v.addEventListener("loadedmetadata", onLoadedMetadata);
 
     return () => {
       v.removeEventListener("timeupdate", onTimeUpdate);
@@ -97,6 +102,7 @@ export default function VideoPlayer({ hlsUrl, thumbnailUrl, videoId, title, auto
       v.removeEventListener("waiting", onWaiting);
       v.removeEventListener("canplay", onCanPlay);
       v.removeEventListener("loadeddata", onCanPlay);
+      v.removeEventListener("loadedmetadata", onLoadedMetadata);
     };
   }, []);
 
@@ -138,6 +144,7 @@ export default function VideoPlayer({ hlsUrl, thumbnailUrl, videoId, title, auto
     setVolume(val);
     setMuted(val === 0);
     v.muted = val === 0;
+    localStorage.setItem("playerVolume", String(val));
   }
 
   function handleProgressClick(e: React.MouseEvent<HTMLDivElement>) {
@@ -193,6 +200,7 @@ export default function VideoPlayer({ hlsUrl, thumbnailUrl, videoId, title, auto
           "absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/80 via-transparent to-transparent transition-opacity duration-300",
           showControls ? "opacity-100" : "opacity-0 pointer-events-none"
         )}
+        onClick={togglePlay}
       >
         {/* Center play/pause on click area */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -204,7 +212,7 @@ export default function VideoPlayer({ hlsUrl, thumbnailUrl, videoId, title, auto
         </div>
 
         {/* Bottom bar */}
-        <div className="px-3 pb-3 space-y-2">
+        <div className="px-3 pb-3 space-y-2" onClick={(e) => e.stopPropagation()}>
           {/* Progress bar */}
           <div
             ref={progressRef}
@@ -255,7 +263,7 @@ export default function VideoPlayer({ hlsUrl, thumbnailUrl, videoId, title, auto
                 step={0.05}
                 value={muted ? 0 : volume}
                 onChange={handleVolumeChange}
-                className="w-20 h-1 accent-brand-500 opacity-0 group-hover/vol:opacity-100 transition-opacity cursor-pointer"
+                className="h-1 accent-brand-500 cursor-pointer w-0 group-hover/vol:w-20 overflow-hidden transition-[width] duration-200 ease-in-out"
               />
             </div>
 
