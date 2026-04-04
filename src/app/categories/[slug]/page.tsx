@@ -33,7 +33,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
   ];
 
   return (
-    <div className="max-w-[1600px] mx-auto px-4 py-8">
+    <div className="py-2">
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div>
