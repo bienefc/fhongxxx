@@ -200,6 +200,7 @@ export default function VideoPlayer({ hlsUrl, thumbnailUrl, videoId, title, auto
           "absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/80 via-transparent to-transparent transition-opacity duration-300",
           showControls ? "opacity-100" : "opacity-0 pointer-events-none"
         )}
+        onClick={togglePlay}
       >
         {/* Center play/pause on click area */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -211,7 +212,7 @@ export default function VideoPlayer({ hlsUrl, thumbnailUrl, videoId, title, auto
         </div>
 
         {/* Bottom bar */}
-        <div className="px-3 pb-3 space-y-2">
+        <div className="px-3 pb-3 space-y-2" onClick={(e) => e.stopPropagation()}>
           {/* Progress bar */}
           <div
             ref={progressRef}
