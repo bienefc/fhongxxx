@@ -9,9 +9,10 @@ import type { VideoListItem } from "@/types";
 interface Props {
   video: VideoListItem;
   className?: string;
+  priority?: boolean;
 }
 
-export default function VideoCard({ video, className }: Props) {
+export default function VideoCard({ video, className, priority }: Props) {
   const [hovering, setHovering] = useState(false);
   const [thumbError, setThumbError] = useState(false);
 
@@ -34,6 +35,7 @@ export default function VideoCard({ video, className }: Props) {
               alt={video.title}
               fill
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+              priority={priority}
               className={cn(
                 "object-cover transition-transform duration-300 group-hover:scale-105",
                 hovering && preview ? "opacity-0" : "opacity-100"
